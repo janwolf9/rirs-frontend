@@ -15,7 +15,7 @@
   "scripts": {
     "start": "CI=false react-scripts start",
     "build": "CI=false react-scripts build",
-    "test": "CI=false react-scripts test",
+    "test": "CI=false react-scripts test --coverage --watchAll=false",
     "eject": "CI=false react-scripts eject",
     "test:ci": "CI=false react-scripts test --coverage --watchAll=false"
   },
