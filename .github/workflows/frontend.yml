@@ -1,0 +1,95 @@
+# Ime pipeline-a za frontend
+name: Frontend CI
+
+# Dogodki, ki sprožijo workflow (push in pull request na glavno vejo)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # Job za gradnjo frontenda
+  build-frontend:
+    runs-on: ubuntu-latest  # Okolje, v katerem bo job tekel
+
+    steps:
+    - name: Checkout code  # Kloniranje repozitorija
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js  # Namestitev Node.js okolja
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Cache node_modules  # Caching odvisnosti
+      uses: actions/cache@v3
+      with:
+        path: vodenje-stroskov/frontend/node_modules # Pot do mape node_modules
+        key: ${{ runner.os }}-frontend-${{ hashFiles('vodenje-stroskov/package-lock.json') }} # Ključ za cache
+        restore-keys: |
+          ${{ runner.os }}-frontend-
+      # ⚠️ KAKO DELUJE CACHING:
+      # - Ob prvi izvedbi (cache miss) mapa node_modules še ne obstaja -> npm install ustvari mapo node_modules.
+      # - Po zaključku job-a se vsebina node_modules shrani v cache.
+      # - Ob naslednji izvedbi (cache hit) se node_modules obnovi iz cache-a, kar skrajša čas nameščanja odvisnosti.
+
+    - name: Install dependencies  # Namestitev odvisnosti
+      run: |
+        cd vodenje-stroskov
+        npm ci
+      # Če node_modules že obstaja, npm samo preveri skladnost z datotekama package.json in package-lock.json.
+
+    - name: Build application  # Gradnja aplikacije
+      run: |
+        cd vodenje-stroskov
+        npm run build
+
+    - name: Upload build artifacts  # Naložitev gradbenih artefaktov
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: vodenje-stroskov/build/
+
+  # Job za testiranje frontenda
+  test-frontend:
+    needs: build-frontend  # Testiranje se izvede po uspešni gradnji
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Cache node_modules  # Caching odvisnosti
+      uses: actions/cache@v3
+      with:
+        path: vodenje-stroskov/node_modules
+        key: ${{ runner.os }}-frontend-${{ hashFiles('vodenje-stroskov/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-frontend-
+
+    - name: Install dependencies
+      run: |
+        cd vodenje-stroskov/frontend
+        npm install
+      # ⚠️ KAKO PREPOZNATI, DA JE CACHE USPEŠEN?
+      # - Če je cache hit, npm install ne namešča novih odvisnosti, ampak preveri obstoječe.
+      # - Če je cache miss, npm install ponovno ustvari mapo node_modules.
+
+    - name: Run tests with coverage
+      run: |
+        cd vodenje-stroskov/frontend
+        npm run test:ci
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage
+        path: vodenje-stroskov/coverage/
