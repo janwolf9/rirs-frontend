@@ -13,10 +13,11 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "CI=false react-scripts start",
+    "build": "CI=false react-scripts build",
+    "test": "CI=false react-scripts test",
+    "eject": "CI=false react-scripts eject",
+    "test:ci": "CI=false react-scripts test"
   },
   "eslintConfig": {
     "extends": [
@@ -37,6 +38,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5"
   },
