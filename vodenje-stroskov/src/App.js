@@ -7,14 +7,8 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-       
-
-
-
               <SideBar></SideBar>
               <TableComponent></TableComponent>
-
-        
       </header>
     </div>
   );
