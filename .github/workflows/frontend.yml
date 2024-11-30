@@ -27,7 +27,7 @@ jobs:
     - name: Cache node_modules  # Caching odvisnosti
       uses: actions/cache@v3
       with:
-        path: vodenje-stroskov/frontend/node_modules # Pot do mape node_modules
+        path: vodenje-stroskov/node_modules # Pot do mape node_modules
         key: ${{ runner.os }}-frontend-${{ hashFiles('vodenje-stroskov/package-lock.json') }} # Ključ za cache
         restore-keys: |
           ${{ runner.os }}-frontend-
