@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
+import AddCost from './components/AddCost.jsx';
 
 test('renders home', () => {
   render(<App />);
@@ -58,4 +59,35 @@ test('renders kontakt', () => {
   render(<App />);
   const sidebarElement = screen.getByText(/Kontakt/i);
   expect(sidebarElement).toHaveTextContent('Kontakt');
+});
+test('renders AddCost component', () => {
+  render(<AddCost />);
+  const addCostElement = screen.getByText(/Dodaj Strošek/i);
+  expect(addCostElement).toBeInTheDocument();
+});
+
+test('calls onAdd when form is submitted', () => {
+  const handleAdd = jest.fn();
+  render(<AddCost onAdd={handleAdd} />);
+  fireEvent.submit(screen.getByRole('button', { name: /Dodaj Strošek/i }));
+  expect(handleAdd).toHaveBeenCalled();
+});
+
+test('renders input fields', () => {
+  render(<AddCost />);
+  const inputElements = screen.getAllByRole('textbox');
+  expect(inputElements.length).toBeGreaterThan(0);
+});
+
+test('renders submit button', () => {
+  render(<AddCost />);
+  const buttonElement = screen.getByRole('button', { name: /Dodaj Strošek/i });
+  expect(buttonElement).toBeInTheDocument();
+});
+
+test('input fields accept text', () => {
+  render(<AddCost />);
+  const inputElement = screen.getByLabelText(/Naziv:/i);
+  fireEvent.change(inputElement, { target: { value: '100' } });
+  expect(inputElement.value).toBe('100');
 });
