@@ -17,7 +17,7 @@
     "build": "CI=false react-scripts build",
     "test": "CI=false react-scripts test",
     "eject": "CI=false react-scripts eject",
-    "test:ci": "CI=false react-scripts test"
+    "test:ci": "CI=false react-scripts test -- --coverage --watchAll=false"
   },
   "eslintConfig": {
     "extends": [
