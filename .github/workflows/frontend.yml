@@ -95,7 +95,7 @@ jobs:
     needs: test-frontend
     runs-on: ubuntu-latest
     environment: Development
-    if: github.ref == 'refs/heads/main' 
+    if: github.ref == 'refs/heads/dev' 
 
     steps:
     - name: Checkout code
@@ -132,7 +132,56 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-args: "--prod --yes"
           working-directory: ./
-          
+
+  sonarcloud-analysis:
+    needs: test-frontend  
+    runs-on: ubuntu-latest
+    environment:
+
+      name: Development      
+    if: github.ref == 'refs/heads/main' 
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+        
+    - name: Setup Java 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Install dependencies
+      run: |
+        cd vodenje-stroskov
+        npm ci
+
+    - name: Collect coverage (React-specific)
+      run: |
+        cd vodenje-stroskov
+        npm run test:ci -- --coverage
+      env:
+        CI: true
+
+    - name: Upload coverage report
+      run: |
+        cp vodenje-stroskov/coverage/lcov.info .
+
+    - name: Run SonarCloud analysis
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        npx sonar-scanner \
+          -Dsonar.projectKey=${{ secrets.PROJECT_KEY }} \
+          -Dsonar.organization=${{ secrets.ORGANIZATION_KEY }} \
+          -Dsonar.sources=./vodenje-stroskov \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info         
   deploy-pages:
     needs: test-frontend
     runs-on: ubuntu-latest
