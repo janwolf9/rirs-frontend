@@ -172,6 +172,9 @@ jobs:
       run: |
         cp vodenje-stroskov/coverage/lcov.info .
 
+    - name: Fix permissions for sonar-scanner
+      run: chmod +x ./vodenje-stroskov/node_modules/.bin/sonar-scanner || true
+
     - name: Run SonarCloud analysis
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
