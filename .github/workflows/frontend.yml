@@ -131,7 +131,7 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-args: "--prod --yes"
-          working-directory: ./vodenje-stroskov
+          working-directory: ./
           
   deploy-pages:
     needs: test-frontend
