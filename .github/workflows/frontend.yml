@@ -116,8 +116,43 @@ jobs:
       run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/frontend:dev
         docker push ${{ secrets.DOCKER_USERNAME }}/frontend:${{ github.sha }}
+
+  dockerize-and-push-prod:
+    needs: [test-frontend, sonarcloud-analysis]
+    runs-on: ubuntu-latest
+
+    if: github.ref == 'refs/heads/main' 
+
+    environment:
+      name: Production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Check SonarCloud Quality Gate
+      run: |
+        curl -u ${{ secrets.SONAR_TOKEN }}: \
+          "https://sonarcloud.io/api/project_badges/measure?project=${{ secrets.PROJECT_KEY }}&metric=alert_status" | grep -q "OK" || exit 1
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:prod ./vodenje-stroskov
+        docker tag ${{ secrets.DOCKER_USERNAME }}/frontend:prod ${{ secrets.DOCKER_USERNAME }}/frontend:${{ github.sha }}
+
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker push ${{ secrets.DOCKER_USERNAME }}/frontend:prod
+        docker push ${{ secrets.DOCKER_USERNAME }}/frontend:${{ github.sha }}  
+
   deploy-vercel:
-    needs: dockerize-and-push-dev
+    needs: dockerize-and-push-prod
     runs-on: ubuntu-latest
 
     if: github.ref == 'refs/heads/main'
